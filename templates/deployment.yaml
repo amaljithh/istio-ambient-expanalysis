@@ -31,6 +31,8 @@ spec:
             name: {{ .Release.Name }}-index-html-configmap
   strategy:
     canary:
+      canaryService: rollout-ngnix-preview
+      stableService: rollout-ngnix-active
       steps:
         - setWeight: 20
         - pause: {duration: 10}
@@ -39,3 +41,7 @@ spec:
         - setWeight: 70
         - pause: {duration: 10}
         - setWeight: 100
+      trafficRouting:
+        istio:
+          virtualServices:
+            - name: my-virtualservice
