@@ -2,16 +2,24 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: my-virtualservice
+  namespace: myapp-ns
 spec:
   hosts:
   - "*"
   gateways:
-  - my-gateway
+  - myapp-ns/my-gateway
   http:
+  - match:
+    - uri:
+        prefix: /
   - route:
     - destination:
         host: rollout-ngnix-active
+        port:
+          number: 80
       weight: 100
     - destination:
         host: rollout-ngnix-preview
+        port:
+          number: 80
       weight: 0
