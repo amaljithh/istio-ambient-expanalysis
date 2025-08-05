@@ -6,7 +6,7 @@ spec:
   hosts:
   - "*"
   gateways:
-  - default/my-gateway
+  - myapp-ns/my-gateway
   http:
   - match:
     - uri:
