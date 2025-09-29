@@ -7,7 +7,7 @@ spec:
   hosts:
   - "*"
   gateways:
-  - my-gateway
+  - istio-ingressgateway.istio-system.svc.cluster.local
   http:
   - route:
     - destination:
