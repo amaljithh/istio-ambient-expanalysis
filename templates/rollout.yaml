@@ -26,6 +26,7 @@ spec:
     canary:
       canaryService: rollout-ngnix-preview
       stableService: rollout-ngnix-active
+      AutoPromotionEnabled: false
       steps:
         - setWeight: 20
         - pause: {duration: 10}
