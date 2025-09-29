@@ -31,7 +31,7 @@ spec:
         - pause: {duration: 10}
         - analysis:
             templates:
-              - name: blue-green-check
+              - templateName: blue-green-check
         - setWeight: 50
         - pause: {duration: 10}
         - setWeight: 70
