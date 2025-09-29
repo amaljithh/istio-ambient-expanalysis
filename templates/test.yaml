@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Experiment
+metadata:
+  name: blue-green-check
+  namespace: myapp-ns
+spec:
+  templates:
+    - name: check-blue-green
+      # Web metric queries the canary service
+      metrics:
+        - name: page-color
+          interval: 5s
+          count: 3
+          successCondition: result[0] contains "Blue Page" || result[0] contains "Green Page"
+          failureCondition: result[0] not contains "Blue Page" && result[0] not contains "Green Page"
+          provider:
+            web:
+              url: http://rollout-ngnix-preview.myapp-ns.svc.cluster.local/
+              method: GET
