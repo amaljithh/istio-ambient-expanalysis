@@ -5,12 +5,47 @@ metadata:
   namespace: myapp-ns
 spec:
   metrics:
-    - name: page-color
-      interval: 5s
-      count: 3
+    - name: blue-green-page-check
+      interval: 10s
+      count: 1
       provider:
-        web:
-          url: http://rollout-ngnix-preview.myapp-ns.svc.cluster.local/
-          method: GET
-      successCondition: result[0] contains "Blue Page" || result[0] contains "Green Page"
-      failureCondition: result[0] not contains "Blue Page" && result[0] not contains "Green Page"
+        job:
+          spec:
+            backoffLimit: 0
+            template:
+              spec:
+                restartPolicy: Never
+                # Both containers share the same network namespace (needed for localhost curl)
+                shareProcessNamespace: true
+                containers:
+                  # Container 1: Ephemeral app under test
+                  - name: blue-green-app
+                    image: amaljithh/blue-page:v1   # or green-page:v2 when testing canary
+                    ports:
+                      - containerPort: 80
+                    command: ["/bin/sh", "-c"]
+                    args:
+                      - |
+                        echo "Starting temporary webserver..."
+                        python3 -m http.server 80 --directory /usr/share/nginx/html
+                  
+                  # Container 2: Tester, curls the first one
+                  - name: tester
+                    image: curlimages/curl:8.6.0
+                    command: ["/bin/sh", "-c"]
+                    args:
+                      - |
+                        echo "Waiting for webserver..."
+                        sleep 5
+                        echo "Testing connection to blue-green-app container..."
+                        response=$(curl -s http://127.0.0.1:80)
+                        echo "$response"
+                        if echo "$response" | grep -q "Blue Page"; then
+                          echo "OK Blue page detected"
+                        elif echo "$response" | grep -q "Green Page"; then
+                          echo "OK Green page detected"
+                        else
+                          echo "FAIL Page not detected"
+                          exit 1
+      successCondition: result[0] contains "OK"
+      failureCondition: result[0] contains "FAIL"
