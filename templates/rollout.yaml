@@ -34,14 +34,8 @@ spec:
               - templateName: blue-green-check
         - setWeight: 50
         - pause: {duration: 10}
-        - analysis:
-            templates:
-              - templateName: blue-green-check
         - setWeight: 70
         - pause: {duration: 10}
-        - analysis:
-            templates:
-              - templateName: blue-green-check
         - setWeight: 100
       trafficRouting:
         istio:
