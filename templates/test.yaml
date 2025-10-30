@@ -31,16 +31,18 @@ spec:
                         echo "Waiting for webserver..."
                         sleep 5
                         echo "Testing connection to blue-green-app container..."
-                        response=$(curl -s http://127.0.0.1:80)
+                        response=$(curl -s -m 10 http://127.0.0.1:80)
                         echo "---- RESPONSE START ----"
                         echo "$response"
                         echo "---- RESPONSE END ----"
-                        if echo "$response" | grep -iq "blue page"; then
+
+                        normalized=$(echo "$response" | tr '[:upper:]' '[:lower:]' | tr -d '\n' | tr -d '\r')
+
+                        if echo "$normalized" | grep -q "blue page"; then
                           echo "OK Blue page detected"
-                        elif echo "$response" | grep -iq "green page"; then
+                        elif echo "$normalized" | grep -q "green page"; then
                           echo "OK Green page detected"
                         else
                           echo "FAIL Page not detected"
                           exit 1
-      successCondition: result[0] contains "OK"
-      failureCondition: result[0] contains "FAIL"
+                        fi
