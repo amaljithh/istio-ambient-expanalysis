@@ -15,14 +15,13 @@ spec:
             template:
               spec:
                 restartPolicy: Never
+                shareProcessNamespace: true
                 containers:
-                  # Container 1: Web app under test
                   - name: blue-green-app
                     image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
                     ports:
                       - containerPort: 80
 
-                  # Container 2: Tester
                   - name: tester
                     image: curlimages/curl:8.6.0
                     command: ["/bin/sh", "-c"]
@@ -31,18 +30,19 @@ spec:
                         echo "Waiting for webserver..."
                         sleep 5
                         echo "Testing connection to blue-green-app container..."
-                        response=$(curl -s -m 10 http://127.0.0.1:80)
+                        response=$(curl -s http://127.0.0.1:80)
                         echo "---- RESPONSE START ----"
                         echo "$response"
                         echo "---- RESPONSE END ----"
-
-                        normalized=$(echo "$response" | tr '[:upper:]' '[:lower:]' | tr -d '\n' | tr -d '\r')
-
-                        if echo "$normalized" | grep -q "blue page"; then
+                        if echo "$response" | grep -q "Blue Page"; then
                           echo "OK Blue page detected"
-                        elif echo "$normalized" | grep -q "green page"; then
+                          exit 0
+                        elif echo "$response" | grep -q "Green Page"; then
                           echo "OK Green page detected"
+                          exit 0
                         else
                           echo "FAIL Page not detected"
                           exit 1
                         fi
+      successCondition: result[0] contains "OK"
+      failureCondition: result[0] contains "FAIL"
