@@ -16,17 +16,12 @@ spec:
               spec:
                 restartPolicy: Never
                 containers:
-                  # Container 1: Ephemeral app under test
+                  # Container 1: Ephemeral app under test (runs NGINX by default)
                   - name: blue-green-app
                     image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
                     ports:
                       - containerPort: 80
-                    command: ["/bin/sh", "-c"]
-                    args:
-                      - |
-                        echo "Starting temporary webserver..."
-                        python3 -m http.server 80 --directory /usr/share/nginx/html
-
+                  
                   # Container 2: Tester, curls the first one
                   - name: tester
                     image: curlimages/curl:8.6.0
