@@ -26,11 +26,7 @@ spec:
                         nginx -g "daemon off;" &
                         sleep 5
                         
-                        echo "Testing page availability..."
                         response=$(curl -s http://127.0.0.1:80 || true)
-                        echo "---- RESPONSE START ----"
-                        echo "$response"
-                        echo "---- RESPONSE END ----"
 
                         if echo "$response" | grep -q "Blue Page"; then
                           echo "OK Blue page detected"
