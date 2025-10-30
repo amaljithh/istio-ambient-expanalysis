@@ -16,13 +16,13 @@ spec:
               spec:
                 restartPolicy: Never
                 containers:
-                  # Container 1: Ephemeral app under test (runs NGINX by default)
+                  # Container 1: Web app under test
                   - name: blue-green-app
                     image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
                     ports:
                       - containerPort: 80
-                  
-                  # Container 2: Tester, curls the first one
+
+                  # Container 2: Tester
                   - name: tester
                     image: curlimages/curl:8.6.0
                     command: ["/bin/sh", "-c"]
@@ -32,10 +32,12 @@ spec:
                         sleep 5
                         echo "Testing connection to blue-green-app container..."
                         response=$(curl -s http://127.0.0.1:80)
+                        echo "---- RESPONSE START ----"
                         echo "$response"
-                        if echo "$response" | grep -q "Blue Page"; then
+                        echo "---- RESPONSE END ----"
+                        if echo "$response" | grep -iq "blue page"; then
                           echo "OK Blue page detected"
-                        elif echo "$response" | grep -q "Green Page"; then
+                        elif echo "$response" | grep -iq "green page"; then
                           echo "OK Green page detected"
                         else
                           echo "FAIL Page not detected"
