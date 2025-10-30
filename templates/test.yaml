@@ -15,8 +15,6 @@ spec:
             template:
               spec:
                 restartPolicy: Never
-                # Both containers share the same network namespace (needed for localhost curl)
-                shareProcessNamespace: true
                 containers:
                   # Container 1: Ephemeral app under test
                   - name: blue-green-app
@@ -24,7 +22,11 @@ spec:
                     ports:
                       - containerPort: 80
                     command: ["/bin/sh", "-c"]
-                  
+                    args:
+                      - |
+                        echo "Starting temporary webserver..."
+                        python3 -m http.server 80 --directory /usr/share/nginx/html
+
                   # Container 2: Tester, curls the first one
                   - name: tester
                     image: curlimages/curl:8.6.0
