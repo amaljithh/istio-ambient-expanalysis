@@ -23,7 +23,6 @@ spec:
                     image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
                     ports:
                       - containerPort: 80
-                      - protocol: TCP
                     command: ["/bin/sh", "-c"]
                     args:
                       - |
