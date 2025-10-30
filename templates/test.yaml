@@ -20,14 +20,14 @@ spec:
                 containers:
                   # Container 1: Ephemeral app under test
                   - name: blue-green-app
-                    image: amaljithh/blue-page:v1   # or green-page:v2 when testing canary
+                    image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
                     ports:
                       - containerPort: 80
+                      - protocol: TCP
                     command: ["/bin/sh", "-c"]
                     args:
                       - |
                         echo "Starting temporary webserver..."
-                        python3 -m http.server 80 --directory /usr/share/nginx/html
                   
                   # Container 2: Tester, curls the first one
                   - name: tester
