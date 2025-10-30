@@ -15,46 +15,31 @@ spec:
             template:
               spec:
                 restartPolicy: Never
-                shareProcessNamespace: true
                 containers:
-                  # Container 1: Ephemeral app under test
                   - name: blue-green-app
                     image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-                    ports:
-                      - containerPort: 80
-                    command: ["/docker-entrypoint.sh"]
-                    args: ["nginx", "-g", "daemon off;"]
-
-                  # Container 2: Tester that validates the page
-                  - name: tester
-                    image: curlimages/curl:8.6.0
                     command: ["/bin/sh", "-c"]
                     args:
                       - |
-                        set -e
-                        echo "Waiting for webserver to start..."
+                        echo "Starting temporary nginx webserver..."
+                        # Start nginx in background
+                        nginx -g "daemon off;" &
                         sleep 5
-
-                        echo "Testing connection to blue-green-app container..."
+                        
+                        echo "Testing page availability..."
                         response=$(curl -s http://127.0.0.1:80 || true)
-
                         echo "---- RESPONSE START ----"
                         echo "$response"
                         echo "---- RESPONSE END ----"
 
-                        mkdir -p /tmp/argo/analysis
-
                         if echo "$response" | grep -q "Blue Page"; then
                           echo "OK Blue page detected"
-                          echo 0 > /tmp/argo/analysis/output
                           exit 0
                         elif echo "$response" | grep -q "Green Page"; then
                           echo "OK Green page detected"
-                          echo 0 > /tmp/argo/analysis/output
                           exit 0
                         else
                           echo "FAIL Page not detected"
-                          echo 1 > /tmp/argo/analysis/output
                           exit 1
-      successCondition: result == 0
-      failureCondition: result != 0
+      successCondition: result[0] contains "OK"
+      failureCondition: result[0] contains "FAIL"
