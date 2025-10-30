@@ -44,5 +44,5 @@ spec:
                           echo "FAIL Page not detected"
                           exit 1
                         fi
-      successCondition: result[0] contains "OK"
-      failureCondition: result[0] contains "FAIL"
+      successCondition: result == 0
+      failureCondition: result != 0
