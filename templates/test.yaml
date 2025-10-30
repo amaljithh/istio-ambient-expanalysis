@@ -24,9 +24,6 @@ spec:
                     ports:
                       - containerPort: 80
                     command: ["/bin/sh", "-c"]
-                    args:
-                      - |
-                        echo "Starting temporary webserver..."
                   
                   # Container 2: Tester, curls the first one
                   - name: tester
