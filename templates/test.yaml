@@ -15,28 +15,34 @@ spec:
             template:
               spec:
                 restartPolicy: Never
-                shareProcessNamespace: true   # Ensures tester can reach app via localhost
+                shareProcessNamespace: true
                 containers:
-                  # Container 1: The app under test
+                  # Container 1: Ephemeral app under test
                   - name: blue-green-app
                     image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
                     ports:
                       - containerPort: 80
-                  # Container 2: Tester that verifies the webpage
+                    command: ["/docker-entrypoint.sh"]
+                    args: ["nginx", "-g", "daemon off;"]
+
+                  # Container 2: Tester that validates the page
                   - name: tester
                     image: curlimages/curl:8.6.0
                     command: ["/bin/sh", "-c"]
                     args:
                       - |
+                        set -e
                         echo "Waiting for webserver to start..."
                         sleep 5
 
                         echo "Testing connection to blue-green-app container..."
-                        response=$(curl -s http://127.0.0.1:80)
+                        response=$(curl -s http://127.0.0.1:80 || true)
 
                         echo "---- RESPONSE START ----"
                         echo "$response"
                         echo "---- RESPONSE END ----"
+
+                        mkdir -p /tmp/argo/analysis
 
                         if echo "$response" | grep -q "Blue Page"; then
                           echo "OK Blue page detected"
@@ -50,6 +56,5 @@ spec:
                           echo "FAIL Page not detected"
                           echo 1 > /tmp/argo/analysis/output
                           exit 1
-
       successCondition: result == 0
       failureCondition: result != 0
